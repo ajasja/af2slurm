@@ -36,6 +36,10 @@ def move_over_fasta_file(
         else:
             colab_args = ''
     
+    # add fasta header if it is missing. Just use the name of the file
+    if lines[0][0] != '>':
+        lines.insert(0, '>' + stem_name)
+
     def filter_stars_spaces(line):
         if line[0]=='>': # if fasta header, don't do any replacements
             return line
