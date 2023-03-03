@@ -36,8 +36,13 @@ def move_over_fasta_file(
         else:
             colab_args = ''
     
-    # Remove possible (*)
-    lines = [l.replace('*','') for l in lines]
+    def filter_stars_spaces(line):
+        if line[0]=='>': # if fasta header, don't do any replacements
+            return line
+        # get rid of stars and spaces in the sequence 
+        return line.replace('*','').replace(' ','') 
+    
+    lines = [filter_stars_spaces(l) for l in lines]
     
     with open(out_pathname, 'w+') as target_file:
         target_file.write("\n".join(lines))
