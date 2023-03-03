@@ -6,6 +6,7 @@ from glob import glob
 import os
 import shutil
 from pathlib import Path
+import logging
 
 
 def move_over_fasta_file(
@@ -74,9 +75,9 @@ def move_and_submit_fasta(fasta_path, args, dry_run=False):
 
     if not dry_run:
         slurm_id = subprocess.getoutput(submit)
-        print(f"Submitted to slurm with ID {slurm_id}")
+        logging.info(f"Submitted to slurm with ID {slurm_id}")
     else:
-        print(submit)
+        logging.info(submit)
 
 
 def main():
@@ -97,6 +98,7 @@ def main():
     )
     parser.add_argument("--in_folder", help="Directory to watch for fasta files", default="./in")
     parser.add_argument("--out_folder", help="Directory to write results to", default="./out")
+    parser.add_argument("--log_path_name", help="Directory to write results to", default="out.log")
     parser.add_argument("--scan_interval_s", help="Scan folder every X seconds", default=60, type=int)
     parser.add_argument(
         "--colabfold_path",
@@ -115,13 +117,20 @@ def main():
     )
     args = parser.parse_args()
 
-    print("Running af2slurm watcher with arguments: " + str(args))
+    logging.basicConfig(
+        encoding="utf-8",
+        level=logging.DEBUG,
+        format="%(asctime)s %(message)s",
+        handlers=[logging.FileHandler(args.log_path_name), logging.StreamHandler()],
+    )
+
+    logging.info("Running af2slurm watcher with arguments: " + str(args))
 
     while True:
         # moves files to the output folder and submit them to slurm
         fastas = sorted(glob(f"{args.in_folder}/*.fasta"))
         for fasta in fastas:
-            print(f"Submitting file: {fasta}")
+            logging.info(f"Submitting file: {fasta}")
             move_and_submit_fasta(fasta, args, dry_run=args.dry_run)
         if args.dry_run:
             # only execute loop once if we are doing a dry run
