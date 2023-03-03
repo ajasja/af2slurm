@@ -9,52 +9,53 @@ from pathlib import Path
 
 
 def move_over_fasta_file(
-    file_path: str,  out_folder: str, dry_run: bool = False
+    file_path: str, out_folder: str, dry_run: bool = False
 ) -> tuple[str, str, str]:  # dry_run is set to 0 which means the comand goes through
-    """Makes a file to the out folder. 
+    """Makes a file to the out folder.
     Returns the path to the fasta file, the output folder and any first line comments, without the comment char (to be used as arguments for colabfold_batch)
     """
     file_path = Path(file_path)
-    out_folder = Path(out_folder) 
-    if not file_path.suffix == '.fasta':
+    out_folder = Path(out_folder)
+    if not file_path.suffix == ".fasta":
         raise ValueError("File name does not end with '.fasta'")
 
-    stem_name = file_path.stem # stem is file name without extension 
-    
-    out_sub_folder = out_folder/stem_name
-    out_pathname = out_sub_folder/file_path.name 
+    stem_name = file_path.stem  # stem is file name without extension
+
+    out_sub_folder = out_folder / stem_name
+    out_pathname = out_sub_folder / file_path.name
     os.makedirs(out_sub_folder, exist_ok=True)
-    
+
     with open(file_path) as source_file:
-        #skip empty lines at the start of the file
+        # skip empty lines at the start of the file
         lines = source_file.read()
-        lines = lines.lstrip(' \n').splitlines()
+        lines = lines.lstrip(" \n").splitlines()
         first_line = lines[0].strip()
-        if first_line[0] == '#': # if the first non empty char of the first line is a comment symbol
+        if first_line[0] == "#":  # if the first non empty char of the first line is a comment symbol
             colab_args = first_line[1:]
             del lines[0]
         else:
-            colab_args = ''
-    
+            colab_args = ""
+
     # add fasta header if it is missing. Just use the name of the file
-    if lines[0][0] != '>':
-        lines.insert(0, '>' + stem_name)
+    if lines[0][0] != ">":
+        lines.insert(0, ">" + stem_name)
 
     def filter_stars_spaces(line):
-        if line[0]=='>': # if fasta header, don't do any replacements
+        if line[0] == ">":  # if fasta header, don't do any replacements
             return line
-        # get rid of stars and spaces in the sequence 
-        return line.replace('*','').replace(' ','') 
-    
+        # get rid of stars and spaces in the sequence
+        return line.replace("*", "").replace(" ", "")
+
     lines = [filter_stars_spaces(l) for l in lines]
-    
-    with open(out_pathname, 'w+') as target_file:
+
+    with open(out_pathname, "w+") as target_file:
         target_file.write("\n".join(lines))
 
     if not dry_run:
         os.remove(file_path)
-        
+
     return out_pathname, out_sub_folder, colab_args
+
 
 def create_slurm_submit_line(file_name, slurm_options, colabfold_options):
     file_name = Path(file_name)
@@ -67,7 +68,7 @@ def move_and_submit_fasta(fasta_path, args, dry_run=False):
     # fast_path is a full path to a fasta file in ./in directory
     target_fasta, out_path_name, colabfold_arguments = move_over_fasta_file(fasta_path, args.out_folder)
 
-    colabfold_command= f"source {args.env_setup_script} && {args.colabfold_path} {colabfold_arguments} {target_fasta} {out_path_name}"
+    colabfold_command = f"source {args.env_setup_script} && {args.colabfold_path} {colabfold_arguments} {target_fasta} {out_path_name}"
 
     submit = create_slurm_submit_line(target_fasta, args.slurm_args, colabfold_command)
 
@@ -97,12 +98,24 @@ def main():
     parser.add_argument("--in_folder", help="Directory to watch for fasta files", default="./in")
     parser.add_argument("--out_folder", help="Directory to write results to", default="./out")
     parser.add_argument("--scan_interval_s", help="Scan folder every X seconds", default=60, type=int)
-    parser.add_argument("--colabfold_path", help='find path to the colabfold', default='/home/aljubetic/AF2/CF2.3/colabfold-conda/bin/colabfold_batch ')
-    parser.add_argument("--slurm_args", help='arguments for slurm', default='--partition=gpu --gres=gpu:A40:1 --ntasks=1 --cpus-per-task=2')
-    parser.add_argument("--env_setup_script", help = 'python environment that has AF2 setup', default='/home/aljubetic/bin/set_up_AF2.3.sh')
+    parser.add_argument(
+        "--colabfold_path",
+        help="find path to the colabfold",
+        default="/home/aljubetic/AF2/CF2.3/colabfold-conda/bin/colabfold_batch ",
+    )
+    parser.add_argument(
+        "--slurm_args",
+        help="arguments for slurm",
+        default="--partition=gpu --gres=gpu:A40:1 --ntasks=1 --cpus-per-task=2",
+    )
+    parser.add_argument(
+        "--env_setup_script",
+        help="python environment that has AF2 setup",
+        default="/home/aljubetic/bin/set_up_AF2.3.sh",
+    )
     args = parser.parse_args()
 
-    print("Running af2slurm watcher with arguments: "+str(args))
+    print("Running af2slurm watcher with arguments: " + str(args))
 
     while True:
         # moves files to the output folder and submit them to slurm
