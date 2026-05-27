@@ -2,7 +2,7 @@
 Scripts to run AF2 with slurm integration.
 
 
-# Installation
+## Installation
 
 ```bash
 python -m venv .venv
@@ -10,14 +10,14 @@ source .venv/bin/activate
 pip install ConfigArgParse biopython
 ```
 
-# Usage of alphafold2slurm
+## Usage of alphafold2slurm
 TBW
 
 
 # domesticator-slurm-runner
 Scripts to run Domesticator with slurm integration.
 
-# Usage of domesticator2slurm
+## Usage of domesticator2slurm
 Copy `.fasta` or `.pdb` file to the specified `in` folder.  
 The copied file must start with a **comment** which specifies which **vector**.gb to use and any additional arguments to be passed to Domesticator.
 
@@ -45,6 +45,7 @@ SPEDEIQALEEENAQLEQENAALEEEIAQLEY
     * `env_setup_script_path`: script to activate conda environments, modify as needed
     * Make sure you use full absolute paths
 4. Update the second line of `counter.sh` with the correct config path
+    * Also make it executable: `chmod +x counter.sh`
 5. `crontab -e`
 6. Esc -> `i` (to start insert mode in Vim)
 7. Paste the content of `cron.sh`, make sure you add a new line
