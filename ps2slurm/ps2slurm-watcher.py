@@ -44,12 +44,12 @@ def move_over_yaml_file(
         os.remove(file_path)
 
     return out_pathname, out_sub_folder
-
+#prosculpt='python /home/folivieri/prosculpt/slurm_runner.py'
 # CHANGE TO PROSCULPT COMMAND -> "sbatch launch.sh run_details.yaml" 
 def create_slurm_submit_line(yaml_file_name, launch_script_path,out_path_name, env_setup_script):
     # Submit the file we actually created: the .original copy, with absolute path
     yaml_file_name = Path(yaml_file_name).resolve()
-    return f"bash -c 'source {env_setup_script} $$ /home/folivieri/miniforge3/etc/profile.d/conda.sh && conda activate /home/folivieri/.conda/envs/prosculpt && python {launch_script_path} {yaml_file_name} ++output_dir={out_path_name}'"
+    return f"bash -c 'source {env_setup_script} python {launch_script_path} {yaml_file_name} ++output_dir={out_path_name}'"
 #TODO: ne rabis env providat
 
 
@@ -113,18 +113,17 @@ def main():
 
     logging.info("Running ps2slurm watcher with arguments: " + str(args))
     
-    while True:
-        # moves files to the output folder and submit them to slurm
-        extensions = [".yaml", ".yml", ".YAML"] #** Monitor for yaml files
-        yamls = sorted([f for ext in extensions for f in glob(f"{args.in_folder}/*{ext}")])
-        logging.info(f"Found YAML files: {yamls}")
-        for yaml in yamls:
-            logging.info(f"Submitting file: {yaml}")
-            move_and_submit_yaml(yaml, args, dry_run=args.dry_run)
-        if args.dry_run:
-            # only execute loop once if we are doing a dry run
-            break
-        sleep(args.scan_interval_s)  # continuous scanning of the input folder for files
+    
+    # moves files to the output folder and submit them to slurm
+    extensions = [".yaml", ".yml", ".YAML"] #** Monitor for yaml files
+    yamls = sorted([f for ext in extensions for f in glob(f"{args.in_folder}/*{ext}")])
+    logging.info(f"Found YAML files: {yamls}")
+    for yaml in yamls:
+        logging.info(f"Submitting file: {yaml}")
+        move_and_submit_yaml(yaml, args, dry_run=args.dry_run)
+    if args.dry_run:
+        # only execute loop once if we are doing a dry run
+        pass
 
 
 if __name__ == "__main__":
