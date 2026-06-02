@@ -18,11 +18,11 @@ task_name: unconditional_example  # Name of your task/job. Change to something d
 # If you are just playing arround, no need to worry about these.
 slurm:
   exclude: compute-0-10 # Exclude specific nodes (e.g., faulty ones).
-  partition: gpu # Partition to use. Common ones: 'cpu', 'gpu'. Use 'gpu'.
-  gres: gpu:A40:1 # Generic Resource Scheduling: Request specific resurces -> one A40 GPU. (RFdiffusion inference)
+  partition: gpu-a40 # Partition to use. Common ones: 'cpu', 'gpu'. Use 'gpu'.
+  gres: gpu:1 # Generic Resource Scheduling: Request specific resurces -> one A40 GPU. (RFdiffusion inference)
   cpus-per-task: 2 # CPUs per task: 2 is usually fine; increase for faster processing if available (ProteinMPNN).
-  output: slurm-%A_%a_%x.out # Output log file, find it in /out... %A is job ID, %a is array ID, %x is job name.
-  error: slurm-%A_%a_%x.err # Error log file, find it in /out... Similar to output.
+  output: /home/d12/PROSCULPT_MOUNT/logs/slurm-%A_%a_%x.out # Output log file, find it in /out... %A is job ID, %a is array ID, %x is job name.
+  error: /home/d12/PROSCULPT_MOUNT/logs/slurm-%A_%a_%x.err # Error log file, find it in /out... Similar to output.
 
 num_tasks: 1 # Number of parallel jobs to run. Simple tests: 1. Increase to 5 for real runs.
 
@@ -40,7 +40,7 @@ num_tasks: 1 # Number of parallel jobs to run. Simple tests: 1. Increase to 5 fo
 #       -> 60 AA binder to chain B 1-100 AA of target protein 
 contig: "[150-150]"  
 
-# Path to your protein template or target e.g. /Examples/insulin_target.pdb ... null when doing unconditional
+# Path to your protein template or target e.g. "myCoolProject/Examples/insulin_target.pdb" ... null when doing unconditional
 pdb_path: null
 
 # Number of unique designs (backbones) to generate with RFdiffusion, 1-2 for testing; 10+ for real runs. 
