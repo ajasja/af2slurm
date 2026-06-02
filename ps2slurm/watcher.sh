@@ -1,5 +1,10 @@
 #!/bin/bash
 
+##################################################
+## This file is to be run every minute by cron. ##
+##     Consult readme for more information.     ##
+##################################################
+
 # Load the config variables
 source /home/d12/03_PROSCULPT/ps2slurm/ps2slurm.config
 
@@ -15,10 +20,10 @@ if [ $num -gt 0 ]; then
     for dir in ${in_folder}/*; do
         if [ -d "$dir" ]; then
             DIRNAME=$(basename "$dir")
-            NEWFOLDER="$out_folder/${DIRNAME}"
+            NEWFOLDER="${out_folder}/${DIRNAME}"
 
             # Check if another cron is already consuming this directory
-            if mkdir /tmp/ps2slurm/${DIRNAME}.lock; then
+            if mkdir "/tmp/ps2slurm/${DIRNAME}.lock"; then
                 # Lock acquired
                 echo "$(date +"%Y-%m-%dT%H:%M:%S%z") Found $DIRNAME, waiting 30s to ensure the whole directory has been copied." >> $log_path_name
             else
@@ -34,15 +39,15 @@ if [ $num -gt 0 ]; then
                 # Wait 30 s to ensure the whole directory has been copied by the user. 
                 sleep 30;
                 mv "$dir" "$NEWFOLDER";
-                cd $NEWFOLDER;
+                cd "$NEWFOLDER";
 
-                rm -rf /tmp/ps2slurm/${DIRNAME}.lock; # Release the lock
+                rm -rf "/tmp/ps2slurm/${DIRNAME}.lock"; # Release the lock
 
                 # Find the .yaml file in the new folder
                 yaml_file=$(find . -maxdepth 1 -type f -iname '*.yaml');
                 if [ -f "$yaml_file" ]; then
                     echo "$(date +"%Y-%m-%dT%H:%M:%S%z") Submitting $yaml_file in $NEWFOLDER." >> $log_path_name;
-                    python $launch_script_path "$NEWFOLDER/$yaml_file" ++output_dir="$NEWFOLDER" 2>> $log_path_name; # Redirect errors to log file
+                    python $launch_script_path "$NEWFOLDER/$yaml_file" ++output_dir="$NEWFOLDER" &>> $log_path_name; # Redirect all output to log file
                 else
                     echo "$(date +"%Y-%m-%dT%H:%M:%S%z") [FATAL] No .yaml file found in $NEWFOLDER." >> $log_path_name;
                 fi

@@ -44,8 +44,8 @@ SPEDEIQALEEENAQLEQENAALEEEIAQLEY
 3. Modify `ps2slurm.config` to use correct paths.
     * `env_setup_script_path`: script to activate conda environments, modify as needed
     * Make sure you use full absolute paths
-4. Update the second line of `counter.sh` with the correct config path
-    * Also make it executable: `chmod +x counter.sh`
+4. Update the second line of `watcher.sh` with the correct config path
+    * Also make it executable: `chmod +x watcher.sh`
 5. `crontab -e`
 6. Esc -> `i` (to start insert mode in Vim)
 7. Paste the content of `cron.sh`, make sure you add a new line
